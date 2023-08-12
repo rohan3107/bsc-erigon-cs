@@ -76,6 +76,7 @@ COPY --from=builder /app/build/bin/state /usr/local/bin/state
 COPY --from=builder /app/build/bin/txpool /usr/local/bin/txpool
 COPY --from=builder /app/build/bin/verkle /usr/local/bin/verkle
 COPY --from=builder /app/build/bin/caplin-phase1 /usr/local/bin/caplin-phase1
+COPY --from=builder /app/build/bin/starter /usr/local/bin/starter
 
 
 
@@ -90,4 +91,3 @@ EXPOSE 8545 \
        9090 \
        6060
 
-ENTRYPOINT ["erigon"]
