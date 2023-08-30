@@ -227,7 +227,7 @@ var PrecompiledContractsHertz = map[libcommon.Address]PrecompiledContract{
 	libcommon.BytesToAddress([]byte{100}): &tmHeaderValidate{},
 	libcommon.BytesToAddress([]byte{101}): &iavlMerkleProofValidatePlato{},
 	libcommon.BytesToAddress([]byte{102}): &blsSignatureVerify{},
-	libcommon.BytesToAddress([]byte{103}): &cometBFTLightBlockValidate{},
+	libcommon.BytesToAddress([]byte{103}): &cometBFTLightBlockValidateHertz{},
 }
 
 var (
