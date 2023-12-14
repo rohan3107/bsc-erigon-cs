@@ -83,6 +83,7 @@ func ExecuteBlockEphemerallyForBSC(
 	block.Uncles()
 	ibs := state.New(stateReader)
 	header := block.Header()
+	parent := chainReader.GetHeader(header.ParentHash, header.Number.Uint64()-1)
 	usedGas := new(uint64)
 	gp := new(GasPool)
 	gp.AddGas(block.GasLimit())
@@ -107,7 +108,7 @@ func ExecuteBlockEphemerallyForBSC(
 	if chainConfig.DAOForkBlock != nil && chainConfig.DAOForkBlock.Cmp(block.Number()) == 0 {
 		misc.ApplyDAOHardFork(ibs)
 	}
-	systemcontracts.UpgradeBuildInSystemContract(chainConfig, header.Number, ibs)
+	systemcontracts.UpgradeBuildInSystemContract(chainConfig, header.Number, parent.Time, header.Time, ibs)
 	noop := state.NewNoopWriter()
 	posa, isPoSA := engine.(consensus.PoSA)
 	//fmt.Printf("====txs processing start: %d====\n", block.NumberU64())

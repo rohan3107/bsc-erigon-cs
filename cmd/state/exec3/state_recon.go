@@ -327,7 +327,8 @@ func (rw *ReconWorker) runTxTask(txTask *exec22.TxTask) error {
 	} else if txTask.TxIndex == -1 {
 		// Block initialisation
 		if rw.isPoSA {
-			systemcontracts.UpgradeBuildInSystemContract(rw.chainConfig, txTask.Header.Number, ibs)
+			parent := rw.chain.GetHeader(txTask.Header.ParentHash, txTask.Header.Number.Uint64()-1)
+			systemcontracts.UpgradeBuildInSystemContract(rw.chainConfig, txTask.Header.Number, parent.Time, txTask.Header.Time, ibs)
 		}
 		syscall := func(contract libcommon.Address, data []byte) ([]byte, error) {
 			return core.SysCallContract(contract, data, *rw.chainConfig, ibs, txTask.Header, rw.engine, false /* constCall */, nil /*excessDataGas*/)

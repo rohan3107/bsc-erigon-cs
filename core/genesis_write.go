@@ -38,6 +38,7 @@ import (
 	"github.com/ledgerwatch/erigon/consensus/serenity"
 	"github.com/ledgerwatch/erigon/core/rawdb"
 	"github.com/ledgerwatch/erigon/core/state"
+	"github.com/ledgerwatch/erigon/core/systemcontracts"
 	"github.com/ledgerwatch/erigon/core/types"
 	"github.com/ledgerwatch/erigon/crypto"
 	"github.com/ledgerwatch/erigon/eth/ethconfig"
@@ -97,7 +98,7 @@ func WriteGenesisBlock(tx kv.RwTx, genesis *types.Genesis, overrideShanghaiTime 
 			config.ShanghaiTime = overrideShanghaiTime
 		}
 	}
-
+	systemcontracts.GenesisHash = storedHash
 	if (storedHash == libcommon.Hash{}) {
 		custom := true
 		if genesis == nil {
@@ -230,12 +231,61 @@ func MustCommitGenesis(g *types.Genesis, db kv.RwDB, tmpDir string) *types.Block
 	return block
 }
 
+// read genesis from DB
+func ReadGenesis(tx kv.Tx) (*types.Genesis, error) {
+	var genesis types.Genesis
+	stored, err := rawdb.ReadCanonicalHash(tx, 0)
+	if err != nil {
+		return nil, err
+	}
+	if stored == (libcommon.Hash{}) {
+		return nil, fmt.Errorf("invalid genesis hash in database: %x", stored)
+	}
+	genesisBlock := rawdb.ReadBlock(tx, stored, 0)
+	chainConfig, err := rawdb.ReadChainConfig(tx, stored)
+	if err != nil {
+		return nil, err
+	}
+
+	genesisHeader := genesisBlock.Header()
+	genesis.Config = chainConfig
+	genesis.Nonce = genesisHeader.Nonce.Uint64()
+	genesis.Timestamp = genesisHeader.Time
+	genesis.ExtraData = genesisHeader.Extra
+	genesis.GasLimit = genesisHeader.GasLimit
+	genesis.Difficulty = genesisHeader.Difficulty
+	genesis.Mixhash = genesisHeader.MixDigest
+	genesis.Coinbase = genesisHeader.Coinbase
+	genesis.BaseFee = genesisHeader.BaseFee
+	genesis.ExcessDataGas = genesisHeader.ExcessDataGas
+	genesis.AuRaSeal = genesisHeader.AuRaSeal
+	genesis.AuRaStep = genesisHeader.AuRaStep
+	// read genesis alloc
+	var genesisAlloc types.GenesisAlloc
+	allocData, err := rawdb.ReadGenesisStateSpec(tx, stored)
+	if err != nil {
+		return nil, err
+	}
+	genesisAlloc.UnmarshalJSON(allocData)
+	genesis.Alloc = genesisAlloc
+	return &genesis, nil
+}
+
 // Write writes the block and state of a genesis specification to the database.
 // The block is committed as the canonical head block.
 func write(tx kv.RwTx, g *types.Genesis, tmpDir string) (*types.Block, *state.IntraBlockState, error) {
 	block, statedb, err2 := WriteGenesisState(g, tx, tmpDir)
 	if err2 != nil {
 		return block, statedb, err2
+	}
+	// Marshal the genesis state specification and persist.
+	allocData, err := json.Marshal(g.Alloc)
+	if err != nil {
+		return block, statedb, err
+	}
+	// write alloc
+	if err := rawdb.WriteGenesisStateSpec(tx, block.Hash(), allocData); err != nil {
+		return nil, nil, err
 	}
 	config := g.Config
 	if config == nil {
@@ -537,7 +587,7 @@ func GenesisToBlock(g *types.Genesis, tmpDir string) (*types.Block, *state.Intra
 	}
 
 	var withdrawals []*types.Withdrawal
-	if g.Config != nil && (g.Config.IsShanghai(g.Timestamp)) {
+	if g.Config.Parlia == nil && (g.Config.IsShanghai(g.Number, g.Timestamp)) {
 		withdrawals = []*types.Withdrawal{}
 	}
 

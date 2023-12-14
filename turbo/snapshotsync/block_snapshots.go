@@ -1325,6 +1325,7 @@ func DumpTxs(ctx context.Context, db kv.RoDB, segmentFile, tmpDir string, blockF
 	}
 	defer f.Close()
 
+	var prevTxID uint64
 	numBuf := make([]byte, binary.MaxVarintLen64)
 	parseCtx := types2.NewTxParseContext(*chainID)
 	parseCtx.WithSender(false)
@@ -1415,8 +1416,18 @@ func DumpTxs(ctx context.Context, db kv.RoDB, segmentFile, tmpDir string, blockF
 		if err := addSystemTx(tx, body.BaseTxId); err != nil {
 			return false, err
 		}
+		if prevTxID > 0 {
+			prevTxID++
+		} else {
+			prevTxID = body.BaseTxId
+		}
 		binary.BigEndian.PutUint64(numBuf, body.BaseTxId+1)
-		if err := tx.ForAmount(kv.EthTx, numBuf, body.TxAmount-2, func(_, tv []byte) error {
+		if err := tx.ForAmount(kv.EthTx, numBuf[:8], body.TxAmount-2, func(tk, tv []byte) error {
+			id := binary.BigEndian.Uint64(tk)
+			if prevTxID != 0 && id != prevTxID+1 {
+				panic(fmt.Sprintf("no gaps in tx ids are allowed: block %d does jump from %d to %d", blockNum, prevTxID, id))
+			}
+			prevTxID = id
 			parseCtx.WithSender(len(senders) == 0)
 			valueBuf, err = parse(tv, valueBuf, senders, j)
 			if err != nil {
@@ -1436,7 +1447,7 @@ func DumpTxs(ctx context.Context, db kv.RoDB, segmentFile, tmpDir string, blockF
 		if err := addSystemTx(tx, body.BaseTxId+uint64(body.TxAmount)-1); err != nil {
 			return false, err
 		}
-
+		prevTxID++
 		select {
 		case <-ctx.Done():
 			return false, ctx.Err()

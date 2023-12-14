@@ -109,6 +109,7 @@ require (
 )
 
 require (
+	github.com/ethereum/go-ethereum v1.11.3
 	github.com/minio/sha256-simd v1.0.1
 	github.com/pkg/errors v0.9.1
 	github.com/ugorji/go/codec/codecgen v1.1.13
@@ -154,7 +155,6 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/elastic/gosigar v0.14.2 // indirect
-	github.com/ethereum/go-ethereum v1.11.3 // indirect
 	github.com/ferranbt/fastssz v0.0.0-20210905181407-59cf6761a7d5 // indirect
 	github.com/flynn/noise v1.0.0 // indirect
 	github.com/francoispqt/gojay v1.2.13 // indirect
@@ -301,7 +301,7 @@ require (
 replace (
 	github.com/cometbft/cometbft => github.com/bnb-chain/greenfield-tendermint v0.0.0-20230417032003-4cda1f296fb2
 	github.com/grpc-ecosystem/grpc-gateway/v2 => github.com/prysmaticlabs/grpc-gateway/v2 v2.3.1-0.20210702154020-550e1cd83ec1
-	github.com/ledgerwatch/erigon-lib => github.com/node-real/bsc-erigon-lib v1.0.2-0.20230724023158-8adca9da31b4
-	github.com/ledgerwatch/erigon-snapshot => github.com/node-real/bsc-erigon-snapshot v1.0.1-0.20230811013549-a585d11b2b74
+	github.com/ledgerwatch/erigon-lib => github.com/node-real/bsc-erigon-lib v1.0.2-0.20231208082640-a478a85b8ef0
+	github.com/ledgerwatch/erigon-snapshot => github.com/node-real/bsc-erigon-snapshot v1.0.1-0.20231207023556-43c6fd94f10e
 	github.com/tendermint/tendermint => github.com/bnb-chain/tendermint v0.31.15
 )

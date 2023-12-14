@@ -468,7 +468,7 @@ func (hd *HeaderDownload) UpdateStats(req *HeaderRequest, skeleton bool, peer [6
 			}
 		}
 	}
-	log.Debug("Header request sent", "req", fmt.Sprintf("%+v", req), "peer", fmt.Sprintf("%x", peer)[:8])
+	log.Debug("Header request sent", "skeleton", skeleton, "req", fmt.Sprintf("%+v", req), "peer", fmt.Sprintf("%x", peer)[:8])
 }
 
 func (hd *HeaderDownload) UpdateRetryTime(req *HeaderRequest, currentTime time.Time, timeout time.Duration) {
@@ -509,7 +509,7 @@ func (hd *HeaderDownload) InsertHeader(hf FeedHeaderFunc, terminalTotalDifficult
 	var returnTd *big.Int
 	var lastD *big.Int
 	var lastTime uint64
-	if hd.insertQueue.Len() > 0 && hd.insertQueue[0].blockHeight <= hd.highestInDb+1 {
+	if hd.insertQueue.Len() > 0 {
 		link := hd.insertQueue[0]
 		if hd.stageSyncUpperBound > 0 && link.blockHeight > hd.stageSyncUpperBound {
 			log.Warn("Link Beyond the specified upper bound, will not insert")
@@ -1022,10 +1022,6 @@ func (hd *HeaderDownload) ProcessHeader(sh ChainSegmentHeader, newBlock bool, pe
 	}
 	if _, ok := hd.links[sh.Hash]; ok {
 		hd.stats.Duplicates++
-		// Duplicate
-		if sh.Number == hd.highestInDb+1 || sh.Number == hd.highestInDb {
-			delete(hd.links, sh.Hash)
-		}
 		return false
 	}
 	parent, foundParent := hd.links[sh.Header.ParentHash]

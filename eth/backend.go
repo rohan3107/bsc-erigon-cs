@@ -219,14 +219,15 @@ func New(stack *node.Node, config *ethconfig.Config) (*Ethereum, error) {
 		}
 		genesisSpec := config.Genesis
 		if h != (libcommon.Hash{}) { // fallback to db content
-			genesisSpec = nil
+			chainConfig = genesisSpec.Config
+			genesis = rawdb.ReadBlock(tx, h, 0)
+		} else {
+			var genesisErr error
+			chainConfig, genesis, genesisErr = core.WriteGenesisBlock(tx, genesisSpec, config.OverrideShanghaiTime, tmpdir)
+			if _, ok := genesisErr.(*chain.ConfigCompatError); genesisErr != nil && !ok {
+				return genesisErr
+			}
 		}
-		var genesisErr error
-		chainConfig, genesis, genesisErr = core.WriteGenesisBlock(tx, genesisSpec, config.OverrideShanghaiTime, tmpdir)
-		if _, ok := genesisErr.(*chain.ConfigCompatError); genesisErr != nil && !ok {
-			return genesisErr
-		}
-
 		currentBlock = rawdb.ReadCurrentBlock(tx)
 		return nil
 	}); err != nil {

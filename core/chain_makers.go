@@ -324,7 +324,7 @@ func GenerateChain(config *chain.Config, parent *types.Block, engine consensus.E
 				misc.ApplyDAOHardFork(ibs)
 			}
 		}
-		systemcontracts.UpgradeBuildInSystemContract(config, b.header.Number, ibs)
+		systemcontracts.UpgradeBuildInSystemContract(config, b.header.Number, b.parent.Time(), b.header.Time, ibs)
 		// Execute any user modifications to the block
 		if gen != nil {
 			gen(i, b)
