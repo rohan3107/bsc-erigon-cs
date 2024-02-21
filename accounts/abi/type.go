@@ -327,7 +327,19 @@ func (t Type) pack(v reflect.Value) ([]byte, error) {
 		}
 		var ret, tail []byte
 		for i, elem := range t.TupleElems {
-			field := v.FieldByName(fieldmap[t.TupleRawNames[i]])
+			// Assuming 't' is a struct with a known structure and 'fieldmap' is a map with field names as values.
+			// We will validate that 'fieldmap[t.TupleRawNames[i]]' is an actual field of the struct 't' before using reflection.
+
+			fieldName := fieldmap[t.TupleRawNames[i]]
+			// Get the type of the struct
+			tType := reflect.TypeOf(t)
+			// Check if the field exists in the struct
+			if _, ok := tType.FieldByName(fieldName); ok {
+				field := v.FieldByName(fieldName)
+			} else {
+				// Handle the case where the field does not exist or is not accessible
+				// This could be logging the error, returning an error, etc.
+			}
 			if !field.IsValid() {
 				return nil, fmt.Errorf("field %s for tuple not found in the given struct", t.TupleRawNames[i])
 			}

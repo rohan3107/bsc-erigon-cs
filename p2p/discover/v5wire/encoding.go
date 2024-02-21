@@ -486,7 +486,9 @@ func (c *Codec) decodeWhoareyou(head *Header, headerData []byte) (Packet, error)
 func (c *Codec) decodeHandshakeMessage(fromAddr string, head *Header, headerData, msgData []byte) (n *enode.Node, p Packet, err error) {
 	node, auth, session, err := c.decodeHandshake(fromAddr, head)
 	if err != nil {
-		c.sc.deleteHandshake(auth.h.SrcID, fromAddr)
+		if auth != nil {
+			c.sc.deleteHandshake(auth.h.SrcID, fromAddr)
+		}
 		return nil, nil, err
 	}
 

@@ -391,7 +391,10 @@ func (s *Server) StreamNetworkEvents(w http.ResponseWriter, req *http.Request) {
 	//
 	write := func(event, data string) {
 		fmt.Fprintf(w, "event: %s\n", event)
-		fmt.Fprintf(w, "data: %s\n\n", data)
+		import "html"
+
+		escapedData := html.EscapeString(data)
+		fmt.Fprintf(w, "data: %s\n\n", escapedData)
 		if fw, ok := w.(http.Flusher); ok {
 			fw.Flush()
 		}

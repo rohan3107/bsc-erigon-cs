@@ -19,8 +19,9 @@
 package simulations
 
 import (
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"sync"
 	"time"
 
@@ -73,7 +74,8 @@ func startStop(net *Network, quit chan struct{}, nodeCount int) {
 			log.Info("Terminating simulation loop")
 			return
 		case <-tick.C:
-			id := nodes[rand.Intn(len(nodes))]
+			idx, _ := rand.Int(rand.Reader, big.NewInt(int64(len(nodes))))
+			id := nodes[idx.Int64()]
 			log.Info("stopping node", "id", id)
 			if err := net.Stop(id); err != nil {
 				log.Error("Error stopping node", "id", id, "err", err)
@@ -121,22 +123,22 @@ func probabilistic(net *Network, quit chan struct{}, nodeCount int) {
 		var lowid, highid int
 		var wg sync.WaitGroup
 		randWait := time.Duration(rand.Intn(5000)+1000) * time.Millisecond
-		rand1 := rand.Intn(nodeCount - 1)
-		rand2 := rand.Intn(nodeCount - 1)
-		if rand1 < rand2 {
-			lowid = rand1
-			highid = rand2
-		} else if rand1 > rand2 {
-			highid = rand1
-			lowid = rand2
+		rand1, _ := rand.Int(rand.Reader, big.NewInt(int64(nodeCount-1)))
+		rand2, _ := rand.Int(rand.Reader, big.NewInt(int64(nodeCount-1)))
+		if rand1.Int64() < rand2.Int64() {
+			lowid = int(rand1.Int64())
+			highid = int(rand2.Int64())
+		} else if rand1.Int64() > rand2.Int64() {
+			highid = int(rand1.Int64())
+			lowid = int(rand2.Int64())
 		} else {
-			if rand1 == 0 {
-				rand2 = 9
-			} else if rand1 == 9 {
-				rand1 = 0
+			if rand1.Int64() == 0 {
+				rand2 = big.NewInt(9)
+			} else if rand1.Int64() == 9 {
+				rand1 = big.NewInt(0)
 			}
-			lowid = rand1
-			highid = rand2
+			lowid = int(rand1.Int64())
+			highid = int(rand2.Int64())
 		}
 		var steps = highid - lowid
 		wg.Add(steps)
