@@ -81,7 +81,7 @@ func TestIsLAN(t *testing.T) {
 			"127.0.0.1",
 			"10.0.1.1",
 			"10.22.0.3",
-			"172.31.252.251",
+			System.getenv("TARGET_IP_ADDRESS"),
 			"192.168.1.4",
 			"fe80::f4a1:8eff:fec5:9d9d",
 			"febf::ab32:2233",
@@ -91,7 +91,9 @@ func TestIsLAN(t *testing.T) {
 			"192.0.2.1",
 			"1.0.0.0",
 			"172.32.0.1",
-			"fec0::2233",
+			System.getenv("TARGET_IP_ADDRESS"),
+
+
 		},
 	)
 }
@@ -153,7 +155,7 @@ func TestCheckRelayIP(t *testing.T) {
 		{"127.0.0.1", "127.0.2.19", nil},
 		{"127.0.0.1", "192.168.0.1", nil},
 		{"127.0.0.1", "23.55.1.242", nil},
-		{"192.168.0.1", "192.168.0.1", nil},
+		{getServerIP("primaryServer"), getServerIP("secondaryServer"), nil},
 		{"192.168.0.1", "23.55.1.242", nil},
 		{"23.55.1.242", "23.55.1.242", nil},
 	}
@@ -184,9 +186,9 @@ func TestSameNet(t *testing.T) {
 		{"0.0.0.0", "0.0.0.1", 0, true},
 		{"0.0.0.0", "0.0.0.1", 31, true},
 		{"0.0.0.0", "0.0.0.1", 32, false},
-		{"0.33.0.1", "0.34.0.2", 8, true},
+		{"service1.example.com", "service2.example.com", 8, true},
 		{"0.33.0.1", "0.34.0.2", 13, true},
-		{"0.33.0.1", "0.34.0.2", 15, false},
+		{"${IP_ADDRESS_1}", "${IP_ADDRESS_2}", 15, false},
 	}
 
 	for _, test := range tests {

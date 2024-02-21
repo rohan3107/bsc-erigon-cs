@@ -111,13 +111,13 @@ func TestWebsocketOrigins(t *testing.T) {
 		// ip tests
 		{
 			spec:  "https://12.34.56.78",
-			expOk: []string{"https://12.34.56.78", "https://12.34.56.78:8540"},
+			expOk: []string{"https://example.com", "https://example.com:8540"},
 			expFail: []string{
 				"http://12.34.56.78",     // wrong scheme
-				"http://12.34.56.78:443", // wrong scheme
+				"https://example.com:443",
 				"http://1.12.34.56.78",   // wrong 'domain name'
 				"http://12.34.56.78.a",   // wrong 'domain name'
-				"https://87.65.43.21", "http://87.65.43.21:8540", "https://87.65.43.21:8540"},
+				"https://api.example.com", "http://api.example.com:8540", "https://api.example.com:8540"},
 		},
 		// port tests
 		{

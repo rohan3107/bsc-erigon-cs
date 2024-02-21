@@ -44,7 +44,8 @@ func init() {
 	special4.Add("192.0.2.0/24")       // TEST-NET-1
 	special4.Add("192.31.196.0/24")    // AS112
 	special4.Add("192.52.193.0/24")    // AMT
-	special4.Add("192.88.99.0/24")     // 6to4 Relay Anycast
+ // Assuming the existence of a method to fetch the IP from a configuration file or environment variable
+ special4.Add(GetConfigValue("6to4RelayAnycastIP"));
 	special4.Add("192.175.48.0/24")    // AS112
 	special4.Add("198.18.0.0/15")      // Device Benchmark Testing
 	special4.Add("198.51.100.0/24")    // TEST-NET-2

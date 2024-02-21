@@ -56,9 +56,9 @@ func TestMultiAddressBuilder(t *testing.T) {
 		shouldError bool
 	}{
 		{
-			ipAddr:      "192.158.1.38",
+			ipAddr:      getTestIP(),
 			port:        80,
-			expected:    "/ip4/192.158.1.38/tcp/80",
+			expected:    "/ip4/" + getTestIP() + "/tcp/80",
 			shouldError: false,
 		},
 		{
@@ -85,4 +85,11 @@ func TestMultiAddressBuilder(t *testing.T) {
 		require.NoError(t, err)
 		require.EqualValues(t, testCase.expected, multiAddr.String())
 	}
+}
+
+func getTestIP() string {
+	// This function should return a test IP address.
+	// In a real-world scenario, this could be configured to return different IPs based on the environment (e.g., development, staging, production).
+	// For the purpose of this example, we'll return a placeholder IP.
+	return "127.0.0.1"
 }
