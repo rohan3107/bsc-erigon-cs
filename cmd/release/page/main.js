@@ -122,11 +122,11 @@ fetch("./data.json?cacheBuster=" + cacheBuster)
                     // create horizontal html table in the return
                     return `
                       <tr class="table-row">
-                        <td class="table-col" style="padding-left:18px;">${binary.name}</td>
-                        <td class="table-col">${binary.arch}</td>
-                        <td class="table-col"><a href="${binary.file}" target="_blank">${binary.file_name}</a></td>
-                        <td class="table-col">${binary.checksum}</td>
-                        <td class="table-col">${binary.tag}</td>
+                        <td class="table-col" style="padding-left:18px;">${escapeHTML(binary.name)}</td>
+                        <td class="table-col">${escapeHTML(binary.arch)}</td>
+                        <td class="table-col"><a href="${escapeHTML(binary.file)}" target="_blank">${escapeHTML(binary.file_name)}</a></td>
+                        <td class="table-col">${escapeHTML(binary.checksum)}</td>
+                        <td class="table-col">${escapeHTML(binary.tag)}</td>
                       </tr>
                   `;
                   })
@@ -190,4 +190,16 @@ function openTab(evt, tabId, dataType) {
     // Show the current tab, and add an "active" class to the button that opened the tab
     document.getElementById(tabId).style.display = "block";
     evt.currentTarget.className += " active";
+}
+
+function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g, function(tag) {
+        return ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        })[tag] || tag;
+    });
 }

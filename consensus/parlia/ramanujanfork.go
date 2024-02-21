@@ -1,8 +1,9 @@
 package parlia
 
 import (
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"time"
 
 	"github.com/ledgerwatch/erigon/consensus"
@@ -22,9 +23,18 @@ func (p *Parlia) delayForRamanujanFork(snap *Snapshot, header *types.Header) tim
 	if header.Difficulty.Cmp(diffNoTurn) == 0 {
 		// It's not our turn explicitly to sign, delay it a bit
 		wiggle := time.Duration(len(snap.Validators)/2+1) * wiggleTimeBeforeFork
-		delay += fixedBackOffTimeBeforeFork + time.Duration(rand.Int63n(int64(wiggle))) // nolint
+		delay += fixedBackOffTimeBeforeFork + cryptoRandDuration(wiggle)
 	}
 	return delay
+}
+
+func cryptoRandDuration(max time.Duration) time.Duration {
+	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(max)))
+	if err != nil {
+		// In case of an error with the crypto/rand, fallback to a default delay
+		return fixedBackOffTimeBeforeFork
+	}
+	return time.Duration(nBig.Int64())
 }
 
 func (p *Parlia) blockTimeForRamanujanFork(snap *Snapshot, header, parent *types.Header) uint64 {

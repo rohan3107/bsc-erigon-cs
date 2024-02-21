@@ -15,19 +15,25 @@ services:
     user: ${DOCKER_UID}:${DOCKER_GID}
     restart: unless-stopped
     mem_swappiness: 0
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
 
   erigon-node2:
-      profiles:
-        - second
-      image: thorax/erigon:$ERIGON_TAG
-      command: |
-        --datadir=/home/erigon/.local/share/erigon --chain=dev --private.api.addr=0.0.0.0:9090 --staticpeers=$ENODE --log.dir.path=/logs/node2
-      volumes:
-        - datadir2:/home/erigon/.local/share/erigon
-        - ./logdir:/logs
-      user: ${DOCKER_UID}:${DOCKER_GID}
-      restart: unless-stopped
-      mem_swappiness: 0
+    profiles:
+      - second
+    image: thorax/erigon:$ERIGON_TAG
+    command: |
+      --datadir=/home/erigon/.local/share/erigon --chain=dev --private.api.addr=0.0.0.0:9090 --staticpeers=$ENODE --log.dir.path=/logs/node2
+    volumes:
+      - datadir2:/home/erigon/.local/share/erigon
+      - ./logdir:/logs
+    user: ${DOCKER_UID}:${DOCKER_GID}
+    restart: unless-stopped
+    mem_swappiness: 0
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
 
   rpcdaemon:
     profiles:
@@ -40,6 +46,9 @@ services:
       - ./logdir:/logs
     user: ${DOCKER_UID}:${DOCKER_GID}
     ports: [ "8545:8545" ]
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
 
   rpcdaemon-node2:
     profiles:
@@ -52,6 +61,9 @@ services:
       - ./logdir:/logs
     user: ${DOCKER_UID}:${DOCKER_GID}
     ports: [ "8546:8545" ]
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
 
   tests:
     profiles: [ "tests" ]
@@ -65,3 +77,4 @@ services:
 volumes:
   datadir:
   datadir2:
+

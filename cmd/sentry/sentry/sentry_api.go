@@ -2,7 +2,9 @@ package sentry
 
 import (
 	"context"
-	"math/rand"
+	"crypto/rand"
+	"encoding/binary"
+	"math/big"
 
 	"github.com/holiman/uint256"
 	libcommon "github.com/ledgerwatch/erigon-lib/common"
@@ -49,7 +51,7 @@ func (cs *MultiClient) SendBodyRequest(ctx context.Context, req *bodydownload.Bo
 		var bytes []byte
 		var err error
 		bytes, err = rlp.EncodeToBytes(&eth.GetBlockBodiesPacket66{
-			RequestId:            rand.Uint64(), // nolint: gosec
+			RequestId:            cs.randUint64(), // fixed
 			GetBlockBodiesPacket: req.Hashes,
 		})
 		if err != nil {
@@ -86,7 +88,7 @@ func (cs *MultiClient) SendHeaderRequest(ctx context.Context, req *headerdownloa
 		}
 		//log.Info(fmt.Sprintf("Sending header request {hash: %x, height: %d, length: %d}", req.Hash, req.Number, req.Length))
 		reqData := &eth.GetBlockHeadersPacket66{
-			RequestId: rand.Uint64(), // nolint: gosec
+			RequestId: cs.randUint64(), // fixed
 			GetBlockHeadersPacket: &eth.GetBlockHeadersPacket{
 				Amount:  req.Length,
 				Reverse: req.Reverse,
@@ -128,7 +130,7 @@ func (cs *MultiClient) SendHeaderRequest(ctx context.Context, req *headerdownloa
 func (cs *MultiClient) randSentryIndex() (int, bool, func() (int, bool)) {
 	var i int
 	if len(cs.sentries) > 1 {
-		i = rand.Intn(len(cs.sentries) - 1) // nolint: gosec
+		i = int(cs.randInt64(int64(len(cs.sentries) - 1))) // fixed
 	}
 	to := i
 	return i, true, func() (int, bool) {
@@ -154,4 +156,23 @@ func (cs *MultiClient) Penalize(ctx context.Context, penalties []headerdownload.
 			}
 		}
 	}
+}
+
+// randUint64 generates a cryptographically secure random uint64.
+func (cs *MultiClient) randUint64() uint64 {
+	max := big.NewInt(0).SetUint64(^uint64(0))
+	n, err := rand.Int(rand.Reader, max)
+	if err != nil {
+		panic(err) // rand should not fail
+	}
+	return n.Uint64()
+}
+
+// randInt64 generates a cryptographically secure random int64 with a maximum value.
+func (cs *MultiClient) randInt64(max int64) int64 {
+	nBig, err := rand.Int(rand.Reader, big.NewInt(max))
+	if err != nil {
+		panic(err) // rand should not fail
+	}
+	return nBig.Int64()
 }
